@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 from .forms import FormBook
-from django.views.generic import CreateView, ListView
+from django.views.generic import CreateView, ListView, DetailView
 from django.contrib import messages
 from .models import Book
 
@@ -47,3 +47,9 @@ class AllBookView(ListView):
         context = super().get_context_data(**kwargs)
         context["title"] = "ALL BOOK"
         return context
+
+
+class DetailBookView(DetailView):
+    """Детальный просмотр книги"""
+    model = Book
+    template_name = "book_management/book_detail.html"
