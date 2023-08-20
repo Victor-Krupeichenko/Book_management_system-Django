@@ -3,6 +3,8 @@ from .forms import FormBook
 from django.views.generic import CreateView, ListView, DetailView
 from django.contrib import messages
 from .models import Book
+from django.views.generic.edit import UpdateView
+from django.urls import reverse_lazy
 
 
 class CreateBook(CreateView):
@@ -15,7 +17,7 @@ class CreateBook(CreateView):
         try:
             form.save()
             messages.success(self.request, f"книга {self.form_class.title} добавлена")
-            return redirect("/")
+            return redirect("home")
         except Exception as ex:
             messages.error(self.request, f"{ex}")
         return super().form_valid(form)
@@ -53,3 +55,27 @@ class DetailBookView(DetailView):
     """Детальный просмотр книги"""
     model = Book
     template_name = "book_management/book_detail.html"
+
+
+class UpdateBook(UpdateView):
+    """Обновление информации о книге"""
+    model = Book
+    template_name = "book_management/form.html"
+    form_class = FormBook
+    success_url = reverse_lazy("home")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["info"] = "Изменить информацию о книге"
+        context["update_info"] = True
+        return context
+
+    def form_valid(self, form):
+        """Если форма валидна будет показ сообщения"""
+        try:
+            form.save()
+            messages.success(self.request, f"книга {self.form_class.title} обновлена")
+            return redirect("home")
+        except Exception as ex:
+            messages.error(self.request, f"{ex}")
+        return super().form_valid(form)
