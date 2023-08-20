@@ -1,7 +1,8 @@
 from django.shortcuts import redirect
 from .forms import FormBook
-from django.views.generic import CreateView
+from django.views.generic import CreateView, ListView
 from django.contrib import messages
+from .models import Book
 
 
 class CreateBook(CreateView):
@@ -29,4 +30,20 @@ class CreateBook(CreateView):
         context = super().get_context_data(**kwargs)
         context["add_book_form"] = True
         context["title"] = "ADD BOOK"
+        return context
+
+
+class AllBookView(ListView):
+    """Показ всех книг"""
+    model = Book
+    template_name = "book_management/index.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        """Показывает только те книги которые разрешены к показу"""
+        return Book.objects.filter(show_book=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "ALL BOOK"
         return context
