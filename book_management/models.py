@@ -77,7 +77,7 @@ class Author(BaseModelWithSlug):
 
     def __str__(self):
         """Преобразует объект в строку"""
-        return self.first_name
+        return f"{self.first_name} {self.last_name}"
 
     def save(self, *args, **kwargs):
         """Сохраняет slug вместо кириллицы -> латиницей"""
