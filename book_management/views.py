@@ -3,7 +3,7 @@ from .forms import FormBook
 from django.views.generic import CreateView, ListView, DetailView
 from django.contrib import messages
 from .models import Book
-from django.views.generic.edit import UpdateView
+from django.views.generic.edit import UpdateView, DeleteView
 from django.urls import reverse_lazy
 
 
@@ -15,8 +15,8 @@ class CreateBook(CreateView):
     def form_valid(self, form):
         """Если форма валидна будет показ сообщения"""
         try:
-            form.save()
-            messages.success(self.request, f"книга {self.form_class.title} добавлена")
+            book = form.save()
+            messages.success(self.request, f"книга {book.title} добавлена")
             return redirect("home")
         except Exception as ex:
             messages.error(self.request, f"{ex}")
@@ -73,9 +73,23 @@ class UpdateBook(UpdateView):
     def form_valid(self, form):
         """Если форма валидна будет показ сообщения"""
         try:
-            form.save()
-            messages.success(self.request, f"книга {self.form_class.title} обновлена")
+            book = form.save()
+            messages.success(self.request, f"книга {book.title} обновлена")
             return redirect("home")
         except Exception as ex:
             messages.error(self.request, f"{ex}")
+        return super().form_valid(form)
+
+
+class DeleteBook(DeleteView):
+    """Удаление книги"""
+    model = Book
+    template_name = "book_management/index.html"
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        """Основная задача этого метода - это показ сообщения после удаления книги"""
+        instance = self.get_object()
+        book_title = instance.title
+        messages.success(self.request, f"книга {book_title} удалена")
         return super().form_valid(form)
