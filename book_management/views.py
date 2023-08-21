@@ -2,7 +2,7 @@ from django.shortcuts import redirect
 from .forms import FormBook, FormPublisher, FormAuthor, FormLanguage, FormGenre
 from django.views.generic import CreateView, ListView, DetailView
 from django.contrib import messages
-from .models import Book, Author, Publisher, Language
+from .models import Book, Author, Publisher, Language, Genre
 from django.views.generic.edit import UpdateView, DeleteView
 from django.urls import reverse_lazy
 from .mixins import MixinCreateView
@@ -12,7 +12,6 @@ class CreateBook(MixinCreateView, CreateView):
     """Контроллер для добавления книги"""
     form_class = FormBook
     template_name = "book_management/form.html"
-    field_name = "title"
     success_message = "Книга {field} добавлена"
 
     def form_valid(self, form, **kwargs):
@@ -127,6 +126,12 @@ class CreateAuthor(MixinCreateView, CreateView):
     field_name = "first_name"
     success_message = "Автор {field} добавлен"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["create_author"] = True
+        context["title"] = "Добавить автора"
+        return context
+
     def form_valid(self, form, **kwargs):
         return super().form_valid(form, success_message=self.success_message)
 
@@ -134,24 +139,22 @@ class CreateAuthor(MixinCreateView, CreateView):
         return super().form_invalid(form)
 
 
-class CreatePublisher(CreateView):
+class CreatePublisher(MixinCreateView, CreateView):
     """Добавляет издательство"""
     form_class = FormPublisher
     template_name = "book_management/form.html"
-    success_url = reverse_lazy("home")
+    success_message = "Издатель {field} добавлен"
 
-    def form_valid(self, form):
-        try:
-            publisher = form.save()
-            messages.success(self.request, f"издательство {publisher.title} добавлено")
-            return redirect("home")
-        except Exception as ex:
-            messages.error(self.request, f"error {ex}")
-        return super().form_valid(form)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["create_publisher"] = True
+        context["title"] = "Добавить издателя"
+        return context
+
+    def form_valid(self, form, **kwargs):
+        return super().form_valid(form, success_message=self.success_message)
 
     def form_invalid(self, form):
-        """Если форма не валидна будет показ сообщения"""
-        messages.error(self.request, "Форма заполнена не корректно")
         return super().form_invalid(form)
 
 
@@ -191,7 +194,8 @@ class DeletePublisher(DeleteView):
     template_name = "book_management/list_objects.html"
     success_url = reverse_lazy("home")
 
-    def form_invalid(self, form):
+    def form_valid(self, form):
+        """Тут этот метод исключительно для показа сообщения"""
         instance = self.get_object()
         messages.success(self.request, f"издательство {instance.title} удалено")
-        return super().form_invalid(form)
+        return super().form_valid(form)
