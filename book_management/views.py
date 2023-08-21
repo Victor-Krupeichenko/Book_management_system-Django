@@ -289,3 +289,18 @@ class CreateGenre(MixinCreateView, CreateView):
         context["create_genre"] = True
         context["title"] = "Добавить жанр книги"
         return context
+
+
+class AllGenreBook(ListView):
+    """Показ всех книг конкретного жанра"""
+    model = Book
+    template_name = "book_management/index.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Book.objects.filter(genre__slug=self.kwargs["slug"], show_book=True).all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Все книги этого жанра"
+        return context
