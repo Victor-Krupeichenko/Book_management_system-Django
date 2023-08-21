@@ -304,3 +304,19 @@ class AllGenreBook(ListView):
         context = super().get_context_data(**kwargs)
         context["title"] = "Все книги этого жанра"
         return context
+
+
+class AllGenreView(ListView):
+    """Показать все жанры"""
+    model = Genre
+    template_name = "book_management/list_objects.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Genre.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["genre"] = True
+        context["title"] = "Все жанры"
+        return context
