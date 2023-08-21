@@ -3,11 +3,14 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from autoslug import AutoSlugField
 from uuslug import uuslug
+from django.urls import reverse_lazy
 
 
-def instance_title(instance):
-    """Возвращает название для формирования slug"""
-    return instance.title
+def instance_field(instance):
+    """Возвращает поля для формирования slug"""
+    if instance.title:
+        return instance.title
+    return instance.first_name
 
 
 def slugify_value(value):
@@ -23,16 +26,23 @@ def path_cover_for_book(instance, filename):
 class BaseModelWithSlug(models.Model):
     """
     Базовая модель от которой наследуются остальные модели
-    Эта базовая модель добавляет поля slug
+    Эта базовая модель добавляет поля slug, сортировку объектов по умолчанию(поля title),
+    генерирует slug из указанного поля
     """
     slug = AutoSlugField(
-        max_length=250, unique=True, db_index=True, populate_from=instance_title,
-        slugify=slugify_value
+        max_length=250, unique=True, db_index=True, populate_from=instance_field, slugify=slugify_value
     )
 
+    def save(self, *args, **kwargs):
+        if hasattr(self, "slug_field"):  # проверяет, имеется ли у объекта атрибут с заданным именем - "slug_field"
+            self.slug = uuslug(self.slug_field, instance=self)  # Генерируем slug на основе этого поля
+        else:
+            self.slug = uuslug(self.title, instance=self)  # Генерируем slug на основе этого поля title
+        super().save(*args, **kwargs)
+
     class Meta:
-        """Указывает что это класс абстрактный и для него не будет создана таблица в базе данных"""
-        abstract = True
+        abstract = True  # Указывает что это класс абстрактный и для него не будет создана таблица в базе данных
+        ordering = ["title"]  # Указываем какая сортировка объектов будет по умолчанию title
 
 
 class Book(BaseModelWithSlug):
@@ -58,15 +68,20 @@ class Book(BaseModelWithSlug):
         """Преобразует объект в строку"""
         return self.title
 
-    def save(self, *args, **kwargs):
-        """Сохраняет slug вместо кириллицы -> латиницей"""
-        self.slug = uuslug(self.title, instance=self)
-        super().save(*args, **kwargs)
-
     class Meta:
-        ordering = ["title"]
+        """
+        Русские название разделов
+        в единственном и множественном числе
+        """
         verbose_name = "Книга"
         verbose_name_plural = "Книги"
+
+    def get_absolute_url(self):
+        """Согласно конвенции абсолютный путь к конкретной книге"""
+        context = {
+            "slug": self.slug
+        }
+        return reverse_lazy("detail_book", kwargs=context)
 
 
 class Author(BaseModelWithSlug):
@@ -75,18 +90,23 @@ class Author(BaseModelWithSlug):
     last_name = models.CharField(max_length=100, verbose_name="Фамилия автора")
     country = models.CharField(max_length=168, blank=True, verbose_name="Страна")
 
+    def save(self, *args, **kwargs):
+        self.slug_field = self.first_name
+        super().save(*args, **kwargs)
+
     def __str__(self):
         """Преобразует объект в строку"""
         return f"{self.first_name} {self.last_name}"
 
-    def save(self, *args, **kwargs):
-        """Сохраняет slug вместо кириллицы -> латиницей"""
-        self.slug = uuslug(self.first_name, instance=self)
-        super().save(*args, **kwargs)
-
     class Meta:
+        """
+        Русские название разделов
+        в единственном и множественном числе
+        и сортировка по полю first_name
+        """
         verbose_name = "Автор"
         verbose_name_plural = "Авторы"
+        ordering = ["first_name"]
 
 
 class Publisher(BaseModelWithSlug):
@@ -99,12 +119,11 @@ class Publisher(BaseModelWithSlug):
         """Преобразует объект в строку"""
         return self.title
 
-    def save(self, *args, **kwargs):
-        """Сохраняет slug вместо кириллицы -> латиницей"""
-        self.slug = uuslug(self.title, instance=self)
-        super().save(*args, **kwargs)
-
     class Meta:
+        """
+        Русские название разделов
+        в единственном и множественном числе
+        """
         verbose_name = "Издательство"
         verbose_name_plural = "Издательства"
 
@@ -117,12 +136,11 @@ class Genre(BaseModelWithSlug):
         """Преобразует объект в строку"""
         return self.title
 
-    def save(self, *args, **kwargs):
-        """Сохраняет slug вместо кириллицы -> латиницей"""
-        self.slug = uuslug(self.title, instance=self)
-        super().save(*args, **kwargs)
-
     class Meta:
+        """
+        Русские название разделов
+        в единственном и множественном числе
+        """
         verbose_name = "Жанр"
         verbose_name_plural = "Жанры"
 
@@ -135,11 +153,10 @@ class Language(BaseModelWithSlug):
         """Преобразует объект в строку"""
         return self.title
 
-    def save(self, *args, **kwargs):
-        """Сохраняет slug вместо кириллицы -> латиницей"""
-        self.slug = uuslug(self.title, instance=self)
-        super().save(*args, **kwargs)
-
     class Meta:
+        """
+        Русские название разделов
+        в единственном и множественном числе
+        """
         verbose_name = "Язык книги"
         verbose_name_plural = "Языки"
