@@ -320,3 +320,16 @@ class AllGenreView(ListView):
         context["genre"] = True
         context["title"] = "Все жанры"
         return context
+
+
+class DeleteGenre(DeleteView):
+    """Удаления жанра"""
+    model = Genre
+    template_name = "book_management/list_objects.html"
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        """Тут этот метод исключительно для показа сообщения"""
+        instance = self.get_object()
+        messages.success(self.request, f"жанр {instance.title} удален")
+        return super().form_valid(form)
