@@ -34,3 +34,27 @@ class FormPublisher(BaseFieldForm):
     class Meta:
         model = Publisher
         fields = ["title", "address", "email_address"]
+
+
+class FormAuthor(BaseFieldForm):
+    """Форма для модели Author"""
+
+    class Meta:
+        model = Author
+        fields = ["first_name", "last_name", "country"]
+
+
+class FormLanguage(BaseFieldForm):
+    """Форма для модели Language"""
+
+    class Meta:
+        model = Language
+        fields = ["title"]
+
+
+class FormGenre(BaseFieldForm):
+    """Форма для модели Genre"""
+
+    class Meta:
+        model = Genre
+        fields = ["title"]
