@@ -270,3 +270,22 @@ class DeleteLanguage(DeleteView):
         instance = self.get_object()
         messages.success(self.request, f"язык {instance.title} удален")
         return super().form_valid(form)
+
+
+class CreateGenre(MixinCreateView, CreateView):
+    """Добавление Жанра"""
+    form_class = FormGenre
+    template_name = "book_management/form.html"
+    success_message = "Жанр {field} добавлен"
+
+    def form_valid(self, form, **kwargs):
+        return super().form_valid(form, success_message=self.success_message)
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["create_genre"] = True
+        context["title"] = "Добавить жанр книги"
+        return context
