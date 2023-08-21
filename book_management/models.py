@@ -1,48 +1,7 @@
-import os
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from autoslug import AutoSlugField
-from uuslug import uuslug
+from .utils import BaseModelWithSlug, path_cover_for_book
 from django.urls import reverse_lazy
-
-
-def instance_field(instance):
-    """Возвращает поля для формирования slug"""
-    if instance.title:
-        return instance.title
-    return instance.first_name
-
-
-def slugify_value(value):
-    """Возвращает новую строку названия в которой все пробелы заменены на -(тире)"""
-    return value.replace(" ", "-")
-
-
-def path_cover_for_book(instance, filename):
-    """Сохраняет обложку для книги в папку с названием книги"""
-    return os.path.join(instance.title, filename)
-
-
-class BaseModelWithSlug(models.Model):
-    """
-    Базовая модель от которой наследуются остальные модели
-    Эта базовая модель добавляет поля slug, сортировку объектов по умолчанию(поля title),
-    генерирует slug из указанного поля
-    """
-    slug = AutoSlugField(
-        max_length=250, unique=True, db_index=True, populate_from=instance_field, slugify=slugify_value
-    )
-
-    def save(self, *args, **kwargs):
-        if hasattr(self, "slug_field"):  # проверяет, имеется ли у объекта атрибут с заданным именем - "slug_field"
-            self.slug = uuslug(self.slug_field, instance=self)  # Генерируем slug на основе этого поля
-        else:
-            self.slug = uuslug(self.title, instance=self)  # Генерируем slug на основе этого поля title
-        super().save(*args, **kwargs)
-
-    class Meta:
-        abstract = True  # Указывает что это класс абстрактный и для него не будет создана таблица в базе данных
-        ordering = ["title"]  # Указываем какая сортировка объектов будет по умолчанию title
 
 
 class Book(BaseModelWithSlug):
@@ -63,10 +22,6 @@ class Book(BaseModelWithSlug):
         ]
     )
     show_book = models.BooleanField(default=True, verbose_name="Показать книгу")
-
-    def __str__(self):
-        """Преобразует объект в строку"""
-        return self.title
 
     class Meta:
         """
@@ -115,10 +70,6 @@ class Publisher(BaseModelWithSlug):
     address = models.CharField(max_length=250, verbose_name="Адрес издательства")
     email_address = models.EmailField(max_length=250, unique=True, blank=True, verbose_name="Email адрес")
 
-    def __str__(self):
-        """Преобразует объект в строку"""
-        return self.title
-
     class Meta:
         """
         Русские название разделов
@@ -131,10 +82,6 @@ class Publisher(BaseModelWithSlug):
 class Genre(BaseModelWithSlug):
     """Модель таблицы для жанра книги"""
     title = models.CharField(max_length=50, unique=True, verbose_name="Жанр")
-
-    def __str__(self):
-        """Преобразует объект в строку"""
-        return self.title
 
     class Meta:
         """
@@ -149,14 +96,10 @@ class Language(BaseModelWithSlug):
     """Модель таблицы для языка книги"""
     title = models.CharField(max_length=30, unique=True, verbose_name="Язык книги")
 
-    def __str__(self):
-        """Преобразует объект в строку"""
-        return self.title
-
     class Meta:
         """
         Русские название разделов
         в единственном и множественном числе
         """
         verbose_name = "Язык книги"
-        verbose_name_plural = "Языки"
+        verbose_name_plural = "Языки книги"
