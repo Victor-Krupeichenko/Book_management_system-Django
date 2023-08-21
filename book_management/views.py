@@ -1,30 +1,24 @@
 from django.shortcuts import redirect
-from .forms import FormBook
+from .forms import FormBook, FormPublisher, FormAuthor, FormLanguage, FormGenre
 from django.views.generic import CreateView, ListView, DetailView
 from django.contrib import messages
 from .models import Book, Author, Publisher, Language
 from django.views.generic.edit import UpdateView, DeleteView
 from django.urls import reverse_lazy
+from .mixins import MixinCreateView
 
 
-class CreateBook(CreateView):
+class CreateBook(MixinCreateView, CreateView):
     """Контроллер для добавления книги"""
     form_class = FormBook
     template_name = "book_management/form.html"
+    field_name = "title"
+    success_message = "Книга {field} добавлена"
 
-    def form_valid(self, form):
-        """Если форма валидна будет показ сообщения"""
-        try:
-            book = form.save()
-            messages.success(self.request, f"книга {book.title} добавлена")
-            return redirect("home")
-        except Exception as ex:
-            messages.error(self.request, f"{ex}")
-        return super().form_valid(form)
+    def form_valid(self, form, **kwargs):
+        return super().form_valid(form, success_message=self.success_message)
 
     def form_invalid(self, form):
-        """Если форма не валидна будет показ сообщения"""
-        messages.error(self.request, "Форма заполнена не корректно")
         return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
@@ -107,6 +101,7 @@ class AllAuthorView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["title"] = "Список авторов"
+        context["author"] = True
         return context
 
 
@@ -118,3 +113,85 @@ class AllAuthrBook(ListView):
 
     def get_queryset(self):
         return Book.objects.filter(author__slug=self.kwargs["slug"], show_book=True).all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Все книги автора"
+        return context
+
+
+class CreateAuthor(MixinCreateView, CreateView):
+    """Добавление автора"""
+    form_class = FormAuthor
+    template_name = "book_management/form.html"
+    field_name = "first_name"
+    success_message = "Автор {field} добавлен"
+
+    def form_valid(self, form, **kwargs):
+        return super().form_valid(form, success_message=self.success_message)
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
+
+class CreatePublisher(CreateView):
+    """Добавляет издательство"""
+    form_class = FormPublisher
+    template_name = "book_management/form.html"
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        try:
+            publisher = form.save()
+            messages.success(self.request, f"издательство {publisher.title} добавлено")
+            return redirect("home")
+        except Exception as ex:
+            messages.error(self.request, f"error {ex}")
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        """Если форма не валидна будет показ сообщения"""
+        messages.error(self.request, "Форма заполнена не корректно")
+        return super().form_invalid(form)
+
+
+class AllPublisherView(ListView):
+    """Показать список издательств"""
+    model = Publisher
+    template_name = "book_management/list_objects.html"
+
+    def get_queryset(self):
+        return Publisher.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Список издательств"
+        context["publisher"] = True
+        return context
+
+
+class AllPublisherBook(ListView):
+    """Показать все книги издательства"""
+    model = Book
+    template_name = "book_management/index.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Book.objects.filter(publisher__slug=self.kwargs["slug"]).all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Все книги издательства"
+        return context
+
+
+class DeletePublisher(DeleteView):
+    """Удаления издательства"""
+    model = Publisher
+    template_name = "book_management/list_objects.html"
+    success_url = reverse_lazy("home")
+
+    def form_invalid(self, form):
+        instance = self.get_object()
+        messages.success(self.request, f"издательство {instance.title} удалено")
+        return super().form_invalid(form)
