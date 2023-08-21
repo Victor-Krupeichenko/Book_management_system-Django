@@ -4,8 +4,9 @@ from django.shortcuts import redirect
 
 class MixinCreateView:
     """Миксин для валидации форм и отправки сообщений"""
-    field_name = None
+    field_name = "title"
     error_message = "Форма заполнена некорректно"
+    redirect_to = "home"
 
     def __init__(self):
         self.request = None
@@ -16,7 +17,7 @@ class MixinCreateView:
             form.save()
             field = form.cleaned_data.get(self.field_name)
             messages.success(self.request, success_message.format(field=field))
-            return redirect("home")
+            return redirect(self.redirect_to)
         except Exception as ex:
             messages.error(self.request, f"{ex}")
         return super().form_valid(form)
