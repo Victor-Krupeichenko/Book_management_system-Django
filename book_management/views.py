@@ -1,4 +1,3 @@
-from django.shortcuts import redirect
 from .forms import FormBook, FormPublisher, FormAuthor, FormLanguage, FormGenre
 from django.views.generic import CreateView, ListView, DetailView
 from django.contrib import messages
@@ -242,4 +241,19 @@ class AllLanguageView(ListView):
         context = super().get_context_data(**kwargs)
         context["language"] = True
         context["title"] = "Все языки"
+        return context
+
+
+class AllLanguageBook(ListView):
+    """Показ всех книг на этом языке"""
+    model = Book
+    template_name = "book_management/index.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Book.objects.filter(language__slug=self.kwargs["slug"]).all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Все книги на этом языке"
         return context
