@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     CreateBook, AllBookView, DetailBookView, UpdateBook, DeleteBook, AllAuthorView, AllAuthrBook, CreatePublisher,
     AllPublisherView, AllPublisherBook, CreateAuthor, DeletePublisher, UpdatePublisher, CreateLanguage, AllLanguageView,
-    AllLanguageBook, DeleteLanguage, CreateGenre, AllGenreBook, AllGenreView
+    AllLanguageBook, DeleteLanguage, CreateGenre, AllGenreBook, AllGenreView, DeleteGenre
 )
 
 urlpatterns = [
@@ -26,4 +26,5 @@ urlpatterns = [
     path("add-genre/", CreateGenre.as_view(), name="add_genre"),
     path("all-book-genre/<str:slug>/", AllGenreBook.as_view(), name="all_genre_book"),
     path("all-genre/", AllGenreView.as_view(), name="all_genre"),
+    path("delete-genre/<str:slug>/", DeleteGenre.as_view(), name="delete_genre"),
 ]
