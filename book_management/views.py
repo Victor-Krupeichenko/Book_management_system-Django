@@ -50,12 +50,12 @@ class DetailBookView(DetailView):
     template_name = "book_management/book_detail.html"
 
 
-class UpdateBook(UpdateView):
+class UpdateBook(MixinCreateView, UpdateView):
     """Обновление информации о книге"""
     model = Book
     template_name = "book_management/form.html"
     form_class = FormBook
-    success_url = reverse_lazy("home")
+    success_message = "Книга {field} обновлена"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -63,15 +63,8 @@ class UpdateBook(UpdateView):
         context["update_info"] = True
         return context
 
-    def form_valid(self, form):
-        """Если форма валидна будет показ сообщения"""
-        try:
-            book = form.save()
-            messages.success(self.request, f"книга {book.title} обновлена")
-            return redirect("home")
-        except Exception as ex:
-            messages.error(self.request, f"{ex}")
-        return super().form_valid(form)
+    def form_valid(self, form, **kwargs):
+        return super().form_valid(form, success_message=self.success_message)
 
 
 class DeleteBook(DeleteView):
@@ -199,3 +192,19 @@ class DeletePublisher(DeleteView):
         instance = self.get_object()
         messages.success(self.request, f"издательство {instance.title} удалено")
         return super().form_valid(form)
+
+
+class UpdatePublisher(MixinCreateView, UpdateView):
+    form_class = FormPublisher
+    model = Publisher
+    template_name = "book_management/form.html"
+    success_message = "Издательство {field} обновлено"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["update_publisher"] = True
+        context["title"] = "Обновить издателя"
+        return context
+
+    def form_valid(self, form, **kwargs):
+        return super().form_valid(form, success_message=self.success_message)
