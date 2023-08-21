@@ -257,3 +257,16 @@ class AllLanguageBook(ListView):
         context = super().get_context_data(**kwargs)
         context["title"] = "Все книги на этом языке"
         return context
+
+
+class DeleteLanguage(DeleteView):
+    """Удаления языка"""
+    model = Language
+    template_name = "book_management/list_objects.html"
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        """Тут этот метод исключительно для показа сообщения"""
+        instance = self.get_object()
+        messages.success(self.request, f"язык {instance.title} удален")
+        return super().form_valid(form)
