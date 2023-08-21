@@ -208,3 +208,22 @@ class UpdatePublisher(MixinCreateView, UpdateView):
 
     def form_valid(self, form, **kwargs):
         return super().form_valid(form, success_message=self.success_message)
+
+
+class CreateLanguage(MixinCreateView, CreateView):
+    """Добавляет язык на котором написана книга"""
+    form_class = FormLanguage
+    template_name = "book_management/form.html"
+    success_message = "Язык {field} добавлен"
+
+    def form_valid(self, form, **kwargs):
+        return super().form_valid(form, success_message=self.success_message)
+
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["create_language"] = True
+        context["title"] = "Добавить язык"
+        return context
