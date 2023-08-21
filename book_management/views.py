@@ -227,3 +227,19 @@ class CreateLanguage(MixinCreateView, CreateView):
         context["create_language"] = True
         context["title"] = "Добавить язык"
         return context
+
+
+class AllLanguageView(ListView):
+    """Показ списка языков"""
+    model = Language
+    template_name = "book_management/list_objects.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Language.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["language"] = True
+        context["title"] = "Все языки"
+        return context
