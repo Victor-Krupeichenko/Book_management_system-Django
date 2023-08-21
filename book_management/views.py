@@ -2,7 +2,7 @@ from django.shortcuts import redirect
 from .forms import FormBook
 from django.views.generic import CreateView, ListView, DetailView
 from django.contrib import messages
-from .models import Book
+from .models import Book, Author, Publisher, Language
 from django.views.generic.edit import UpdateView, DeleteView
 from django.urls import reverse_lazy
 
@@ -93,3 +93,28 @@ class DeleteBook(DeleteView):
         book_title = instance.title
         messages.success(self.request, f"книга {book_title} удалена")
         return super().form_valid(form)
+
+
+class AllAuthorView(ListView):
+    """Показ списка всех авторов"""
+    model = Author
+    template_name = "book_management/list_objects.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Author.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Список авторов"
+        return context
+
+
+class AllAuthrBook(ListView):
+    """Получение списка книг только конкретного автора"""
+    model = Book
+    template_name = "book_management/index.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        return Book.objects.filter(author__slug=self.kwargs["slug"], show_book=True).all()
