@@ -1,9 +1,10 @@
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView
 from rest_framework import status
-from api.v1.serializers import LanguageSerializer, GenreSerializer
-from book_management.models import Language, Genre
+from api.v1.serializers import LanguageSerializer, GenreSerializer, PublisherSerializer
+from book_management.models import Language, Genre, Publisher
 from django.http import Http404
+from .utils import BasePublisherUpdate
 
 
 class ListLanguage(ListAPIView):
@@ -156,5 +157,70 @@ class UpdateGenre(UpdateAPIView):
             return Response(data=response, status=status.HTTP_404_NOT_FOUND)
 
 
+class ListPublisher(ListAPIView):
+    """Показ всех издателей"""
+    queryset = Publisher.objects.all()
+    serializer_class = PublisherSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
+class CreatePublisher(CreateAPIView):
+    """Добавление издателя"""
+    serializer_class = PublisherSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            publisher = {
+                "title": serializer.data.get("title"),
+                "address": serializer.data.get("address"),
+                "email_address": serializer.data.get("email_address")
+            }
+            response = {
+                "message": f"Издатель: {publisher} создан."
+            }
+            return Response(data=response, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeletePublisher(DestroyAPIView):
+    """Удаление издателя"""
+
+    def get_queryset(self):
+        return Publisher.objects.filter(pk=self.kwargs["pk"])
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            response = {
+                "message": f"Издатель {instance.title} удален."
+            }
+            return Response(data=response, status=status.HTTP_204_NO_CONTENT)
+        except Http404:
+            response = {
+                "error": "Ни один из издателей не соответствует запросу."
+            }
+            return Response(data=response, status=status.HTTP_404_NOT_FOUND)
+
+
+class PUTUpdatePublisher(BasePublisherUpdate):
+    """Полное обновление издателя"""
+
+    serializer_class = PublisherSerializer
+    model = Publisher
+    partial = False  # Необходимо указать все поля при обновлении
+
+
+class PATCHUpdatePublisher(BasePublisherUpdate):
+    """Частичное обновление издателя"""
+
+    serializer_class = PublisherSerializer
+    model = Publisher
+    partial = True  # Необходимо указать только те поля которые нужно обновить
