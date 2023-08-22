@@ -1,8 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView, CreateAPIView, DestroyAPIView, UpdateAPIView
 from rest_framework import status
-from api.v1.serializers import LanguageSerializer, GenreSerializer, PublisherSerializer
-from book_management.models import Language, Genre, Publisher
+from api.v1.serializers import LanguageSerializer, GenreSerializer, PublisherSerializer, AuthorSerializer
+from book_management.models import Language, Genre, Publisher, Author
 from django.http import Http404
 from .utils import BasePublisherUpdate
 
@@ -224,3 +224,129 @@ class PATCHUpdatePublisher(BasePublisherUpdate):
     serializer_class = PublisherSerializer
     model = Publisher
     partial = True  # Необходимо указать только те поля которые нужно обновить
+
+
+class ListAuthor(ListAPIView):
+    """Показать всех авторов"""
+    queryset = Author.objects.order_by("pk").all()
+    serializer_class = AuthorSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+class CreateAuthor(CreateAPIView):
+    """Создание(добавления) автора"""
+    serializer_class = AuthorSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            author = {
+                "first_name": serializer.data.get("first_name"),
+                "last_name": serializer.data.get("last_name"),
+                "country": serializer.data.get("country")
+            }
+            response = {
+                "message": f"Автор {author} создан."
+            }
+            return Response(data=response, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteAuthor(DestroyAPIView):
+    """Удаления автора"""
+
+    def get_queryset(self):
+        return Author.objects.filter(pk=self.kwargs["pk"])
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            full_name = f"{instance.first_name} {instance.last_name}"
+            response = {
+                "message": f"Автор {full_name} удален."
+            }
+            return Response(data=response, status=status.HTTP_204_NO_CONTENT)
+        except Http404:
+            response = {
+                "error": "Ни один из авторов не соответствует запросу."
+            }
+            return Response(data=response, status=status.HTTP_404_NOT_FOUND)
+
+
+class PutUpdateAuthor(UpdateAPIView):
+    """Полное обновление автора"""
+    serializer_class = AuthorSerializer
+
+    def get_queryset(self):
+        return Author.objects.filter(pk=self.kwargs["pk"])
+
+    def update(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, request.data, partial=False)
+            old_data = {
+                "old_first_name": instance.first_name,
+                "old_last_name": instance.last_name,
+                "old_country": instance.country
+            }
+            if serializer.is_valid():
+                self.perform_update(serializer)
+                new_data = {
+                    "new_first_name": instance.first_name,
+                    "new_last_name": instance.last_name,
+                    "new_country": instance.country
+                }
+                response = {
+                    "message": f"Автор {old_data} обновлен на {new_data}."
+                }
+                return Response(data=response, status=status.HTTP_200_OK)
+            else:
+                return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Http404:
+            response = {
+                "error": "Ни один из авторов не соответствует запросу."
+            }
+            return Response(data=response, status=status.HTTP_404_NOT_FOUND)
+
+
+class PatchUpdateAuthor(UpdateAPIView):
+    """Частичное обновление автора"""
+    serializer_class = AuthorSerializer
+
+    def get_queryset(self):
+        return Author.objects.filter(pk=self.kwargs["pk"])
+
+    def update(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, request.data, partial=True)
+            old_data = {
+                "old_first_name": instance.first_name,
+                "old_last_name": instance.last_name,
+                "old_country": instance.country
+            }
+            if serializer.is_valid():
+                self.perform_update(serializer)
+                new_data = {
+                    "new_first_name": instance.first_name,
+                    "new_last_name": instance.last_name,
+                    "new_country": instance.country
+                }
+                response = {
+                    "message": f"Автор {old_data} обновлен на {new_data}."
+                }
+                return Response(data=response, status=status.HTTP_200_OK)
+            else:
+                return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Http404:
+            response = {
+                "error": "Ни один из авторов не соответствует запросу."
+            }
+            return Response(data=response, status=status.HTTP_404_NOT_FOUND)
