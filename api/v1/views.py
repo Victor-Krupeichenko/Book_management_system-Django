@@ -1,5 +1,7 @@
-from api.v1.serializers import LanguageSerializer, GenreSerializer, PublisherSerializer, AuthorSerializer
-from book_management.models import Language, Genre, Publisher, Author
+from api.v1.serializers import (
+    LanguageSerializer, GenreSerializer, PublisherSerializer, AuthorSerializer, AllBookSerializer, BookSerializer
+)
+from book_management.models import Language, Genre, Publisher, Author, Book
 from .utils import (
     BaseUpdate, BaseListView, BaseCreateView, BaseDeleteView, data_publisher, data_author, data_language_or_genre,
     data_author_create, data_publisher_create
@@ -139,3 +141,40 @@ class PatchUpdateAuthor(BaseUpdate):
     model = Author
     data_func = data_author
     partial = True
+
+
+class ListBook(BaseListView):
+    """Показ книг"""
+
+    serializer_class = AllBookSerializer
+
+    def get_queryset(self):
+        """Показ книг только тех которые разрешены для показа"""
+        return Book.objects.filter(show_book=True)
+
+
+class CreateBook(BaseCreateView):
+    """Создание(добавление) книги"""
+
+    serializer_class = BookSerializer
+
+
+class PutUpdateBook(BaseUpdate):
+    """Полное обновление книги"""
+
+    serializer_class = BookSerializer
+    model = Book
+
+
+class PatchUpdateBook(BaseUpdate):
+    """Частичное обновление книги"""
+
+    serializer_class = BookSerializer
+    model = Book
+    partial = True
+
+
+class DeleteBook(BaseDeleteView):
+    """Удаление книги"""
+
+    model = Book
