@@ -2,7 +2,8 @@ from django.urls import path
 from api.v1.views import (
     ListLanguage, CreateLanguage, DeleteLanguage, UpdateLanguage, ListGenre, CreateGenre, DeleteGenre, UpdateGenre,
     ListPublisher, CreatePublisher, DeletePublisher, PUTUpdatePublisher, PATCHUpdatePublisher, ListAuthor,
-    CreateAuthor, DeleteAuthor, PutUpdateAuthor, PatchUpdateAuthor
+    CreateAuthor, DeleteAuthor, PutUpdateAuthor, PatchUpdateAuthor, ListBook, CreateBook, PutUpdateBook,
+    PatchUpdateBook, DeleteBook
 )
 
 urlpatterns = [
@@ -24,4 +25,9 @@ urlpatterns = [
     path("delete-author/<int:pk>/", DeleteAuthor.as_view()),
     path("put-update-author/<int:pk>/", PutUpdateAuthor.as_view()),
     path("patch-update-author/<int:pk>/", PatchUpdateAuthor.as_view()),
+    path("list-book/", ListBook.as_view()),
+    path("add-book/", CreateBook.as_view()),
+    path("put-update-book/<int:pk>/", PutUpdateBook.as_view()),
+    path("patch-update-book/<int:pk>/", PatchUpdateBook.as_view()),
+    path("delete-book/<int:pk>/", DeleteBook.as_view()),
 ]
