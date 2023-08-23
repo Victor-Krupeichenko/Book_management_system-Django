@@ -20,7 +20,7 @@ class FormBook(BaseFieldForm):
 
     class Meta:
         model = Book
-        fields = ["title", "author", "publisher", "language", "pages", "cover", "year"]
+        fields = ["title", "author", "publisher", "language", "genre", "pages", "cover", "year"]
 
     def __init__(self, *args, **kwargs):
         """Переопределение метода и добавление виджетов в форму"""
