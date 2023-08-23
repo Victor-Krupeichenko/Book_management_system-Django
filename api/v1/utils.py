@@ -81,6 +81,7 @@ class BaseUpdate(UpdateAPIView):
     partial=True - указывает на частичное обновление объекта(по умолчанию False)
     data_func - Функция, которая будет возвращать старые значение и обновленные значения
     !!! Функцию нужно писать отдельно
+    (если data_func не указана будет возвращено значение по умолчанию)
     """
 
     serializer_class = None
@@ -95,16 +96,23 @@ class BaseUpdate(UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         """Обновляет сам объект"""
+        old_data = None
         try:
             instance = self.get_object()
             serializer = self.get_serializer(instance, request.data, partial=self.partial)  # partial=True-частичное обн
-            old_data = self.data_func(instance=instance)  # Получаем и сохраняем старое значение
+            if self.data_func:
+                old_data = self.data_func(instance=instance)  # Получаем и сохраняем старое значение
             if serializer.is_valid():
                 self.perform_update(serializer)
-                new_data = self.data_func(instance=instance)  # Получаем и сохраняем новое значение
-                response = {
-                    "message": f"{self.model.__name__}: old_: {old_data} обновлен на new_: {new_data}"
-                }
+                if self.data_func:
+                    new_data = self.data_func(instance=instance)  # Получаем и сохраняем новое значение
+                    response = {
+                        "message": f"{self.model.__name__}: old_: {old_data} обновлен на new_: {new_data}"
+                    }
+                else:
+                    response = {
+                        "message": f"Объект {self.model.__name__} обновлен"
+                    }
                 return Response(data=response, status=status.HTTP_200_OK)
             return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Http404:
