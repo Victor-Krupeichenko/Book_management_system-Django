@@ -35,7 +35,9 @@ class AllBookView(ListView):
 
     def get_queryset(self):
         """Показывает только те книги которые разрешены к показу"""
-        return Book.objects.filter(show_book=True)
+        return Book.objects.filter(show_book=True).order_by("title").select_related("publisher").prefetch_related(
+            "genre", "author"
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -103,7 +105,8 @@ class AllAuthrBook(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Book.objects.filter(author__slug=self.kwargs["slug"], show_book=True).all()
+        return Book.objects.filter(author__slug=self.kwargs["slug"], show_book=True).order_by("title").select_related(
+            "publisher").prefetch_related("genre", "author")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -172,7 +175,9 @@ class AllPublisherBook(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Book.objects.filter(publisher__slug=self.kwargs["slug"]).all()
+        return Book.objects.filter(publisher__slug=self.kwargs["slug"]).select_related("publisher").prefetch_related(
+            "genre", "author"
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -251,7 +256,8 @@ class AllLanguageBook(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Book.objects.filter(language__slug=self.kwargs["slug"]).all()
+        return Book.objects.filter(language__slug=self.kwargs["slug"]).order_by("title").select_related(
+            "publisher").prefetch_related("genre", "author")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -298,7 +304,8 @@ class AllGenreBook(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Book.objects.filter(genre__slug=self.kwargs["slug"], show_book=True).all()
+        return Book.objects.filter(genre__slug=self.kwargs["slug"], show_book=True).order_by("title").select_related(
+            "publisher").prefetch_related("author", "genre")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -313,7 +320,7 @@ class AllGenreView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Genre.objects.all()
+        return Genre.objects.order_by("title").all()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
