@@ -1,6 +1,8 @@
 from django.http import Http404
 from rest_framework import status
-from rest_framework.generics import UpdateAPIView, ListAPIView, CreateAPIView, DestroyAPIView
+from rest_framework.generics import (
+    UpdateAPIView, ListAPIView, CreateAPIView, DestroyAPIView, RetrieveAPIView, get_object_or_404
+)
 from rest_framework.response import Response
 
 
@@ -92,7 +94,9 @@ class BaseUpdate(UpdateAPIView):
     def get_queryset(self):
         """Возвращает конкретный объект из базы данных"""
 
-        return self.model.objects.filter(pk=self.kwargs["pk"])
+        return self.model.objects.filter(pk=self.kwargs["pk"]).select_related("publisher").prefetch_related(
+            "genre", "author"
+        )
 
     def update(self, request, *args, **kwargs):
         """Обновляет сам объект"""
@@ -209,3 +213,13 @@ class BaseDeleteView(DestroyAPIView):
                 "error": f"Ни один {self.model.__name__.lower()} не соответствует заданному запросу"
             }
             return Response(data=response, status=status.HTTP_404_NOT_FOUND)
+
+
+class BaseDetailView(RetrieveAPIView):
+    """Показ конкретного объекта"""
+
+    serializer_class = None
+    model = None
+
+    def get_object(self):
+        return get_object_or_404(self.model, pk=self.kwargs["pk"])
