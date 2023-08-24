@@ -3,7 +3,7 @@ from api.v1.views import (
     ListLanguage, CreateLanguage, DeleteLanguage, UpdateLanguage, ListGenre, CreateGenre, DeleteGenre, UpdateGenre,
     ListPublisher, CreatePublisher, DeletePublisher, PUTUpdatePublisher, PATCHUpdatePublisher, ListAuthor,
     CreateAuthor, DeleteAuthor, PutUpdateAuthor, PatchUpdateAuthor, ListBook, CreateBook, PutUpdateBook,
-    PatchUpdateBook, DeleteBook
+    PatchUpdateBook, DeleteBook, DetailBookView
 )
 
 urlpatterns = [
@@ -30,4 +30,5 @@ urlpatterns = [
     path("put-update-book/<int:pk>/", PutUpdateBook.as_view()),
     path("patch-update-book/<int:pk>/", PatchUpdateBook.as_view()),
     path("delete-book/<int:pk>/", DeleteBook.as_view()),
+    path("detail-book-view/<int:pk>/", DetailBookView.as_view()),
 ]
