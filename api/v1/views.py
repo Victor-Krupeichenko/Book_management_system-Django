@@ -3,8 +3,8 @@ from api.v1.serializers import (
 )
 from book_management.models import Language, Genre, Publisher, Author, Book
 from .utils import (
-    BaseUpdate, BaseListView, BaseCreateView, BaseDeleteView, data_publisher, data_author, data_language_or_genre,
-    data_author_create, data_publisher_create
+    BaseUpdate, BaseListView, BaseCreateView, BaseDeleteView, BaseDetailView, data_publisher, data_author,
+    data_language_or_genre, data_author_create, data_publisher_create
 )
 
 
@@ -177,4 +177,11 @@ class PatchUpdateBook(BaseUpdate):
 class DeleteBook(BaseDeleteView):
     """Удаление книги"""
 
+    model = Book
+
+
+class DetailBookView(BaseDetailView):
+    """Просмотр конкретной книги"""
+
+    serializer_class = BookSerializer
     model = Book
