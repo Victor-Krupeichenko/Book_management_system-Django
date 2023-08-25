@@ -94,9 +94,7 @@ class BaseUpdate(UpdateAPIView):
     def get_queryset(self):
         """Возвращает конкретный объект из базы данных"""
 
-        return self.model.objects.filter(pk=self.kwargs["pk"]).select_related("publisher").prefetch_related(
-            "genre", "author"
-        )
+        return self.model.objects.filter(pk=self.kwargs["pk"])
 
     def update(self, request, *args, **kwargs):
         """Обновляет сам объект"""
