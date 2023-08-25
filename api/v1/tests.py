@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 from django.urls import reverse
-from book_management.models import Language, Genre, Author, Publisher
+from book_management.models import Language, Genre, Author, Publisher, Book
 
 
 class TestLanguageAndGenre(APITestCase):
@@ -288,3 +288,176 @@ class TestPublisherAndAuthor(APITestCase):
             response_author = self.client.patch(url_author, update_one_field_author)
             self.assertEquals(response_publisher.status_code, 404)
             self.assertEquals(response_author.status_code, 404)
+
+
+class TestBook(APITestCase):
+    """Тестирование представлений модели Book"""
+
+    def setUp(self):
+        """Предварительное создание данных"""
+
+        self.author = list()
+        self.genre = list()
+        self.language = list()
+        for idx in range(2):
+            language = Language.objects.create(title=f"test_language_title_{idx}")
+            genre = Genre.objects.create(title=f"test_genre_title_{idx}")
+            author = Author.objects.create(
+                first_name=f"test_first_name_{idx}",
+                last_name=f"test_last_name_{idx}",
+                country=f"test_country_{idx}"
+            )
+            self.author.append(author)
+            self.genre.append(genre)
+            self.language.append(language)
+        self.publisher = Publisher.objects.create(
+            title="PublisherTitle",
+            address="PublisherAddress",
+            email_address="publisher@test.com"
+        )
+        self.book = Book.objects.create(
+            title="TitleBook",
+            publisher=self.publisher,
+            pages=200,
+            year=2023
+        )
+        self.book.author.set([aut.pk for aut in self.author])
+        self.book.language.set([lang for lang in self.language])
+        self.book.genre.set([gen for gen in self.genre])
+
+    def tearDown(self):
+        """Удаление данных после завершения теста"""
+        Language.objects.all().delete()
+        Genre.objects.all().delete()
+        Author.objects.all().delete()
+        Publisher.objects.all().delete()
+        Book.objects.all().delete()
+
+    def test_all_book_views(self):
+        """Показать все книги"""
+
+        url_book = reverse("api:list_book")
+        response = self.client.get(url_book)
+        self.assertEquals(response.status_code, 200)
+        Book.objects.all().delete()
+        response = self.client.get(url_book)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.data, [])
+
+    def test_add_book(self):
+        """Добавление книги"""
+
+        url_book = reverse("api:add_book")
+
+        data = {
+            "title": "История Postman",
+            "language": [1, 2],
+            "author": [1, 2],
+            "publisher": 1,
+            "genre": [1, 2],
+            "pages": 777,
+            "year": 2022
+        }
+
+        response = self.client.post(url_book, data)
+        self.assertEquals(response.status_code, 201)
+        self.assertEquals(Book.objects.count(), 2)
+
+        data_invalid = {
+            "title": "Invalid Data",
+            "author": [1, 2],
+            "publisher": 1,
+            "genre": [1, 2],
+            "pages": 777,
+            "year": 2022
+        }
+        response = self.client.post(url_book, data_invalid)
+        self.assertEquals(response.status_code, 400)
+        self.assertEquals(Book.objects.count(), 2)
+        response = self.client.post(url_book, {})
+        self.assertEquals(response.status_code, 400)
+        self.assertEquals(Book.objects.count(), 2)
+
+    def test_put_update_book(self):
+        """Полное обновление записи book"""
+
+        for obj in Book.objects.all():
+            url_book = reverse("api:put_update_book", kwargs={"pk": obj.pk})
+            new_language = Language.objects.create(title="New_Language")
+            new_author = Author.objects.create(first_name="New_First_Name", last_name="New_Last_Name",
+                                               country="New_Country")
+            new_publisher = Publisher.objects.create(title="New_Publisher", address="New_Address",
+                                                     email_address="new@test.com")
+            new_genre = Genre.objects.create(title="New Genre")
+            update = {
+                "title": "UpdateTitle",
+                "language": [new_language.pk],
+                "author": [new_author.pk],
+                "publisher": new_publisher.pk,
+                "genre": [new_genre.pk],
+                "pages": 500,
+                "year": 2011
+            }
+            response = self.client.put(url_book, update)
+            self.assertEquals(response.status_code, 200)
+            self.assertEquals(Book.objects.count(), 1)
+
+            update_invalid_data = {
+                "title": "UpdateTitle",
+                "language": [new_language.pk],
+                "author": [new_author.pk],
+                "genre": [new_genre.pk],
+                "pages": 500,
+                "year": 2011
+            }
+            response = self.client.put(url_book, update_invalid_data)
+            self.assertEquals(response.status_code, 400)
+
+            url_book = reverse("api:put_update_book", kwargs={"pk": 100})
+            response = self.client.put(url_book, update)
+            self.assertEquals(response.status_code, 404)
+
+    def test_patch_update_book(self):
+        """Частичное обновление записи book"""
+        for book in Book.objects.all():
+            url_book = reverse("api:patch_update_book", kwargs={"pk": book.pk})
+            update = {
+                "title": "Patch_Update_Title"
+            }
+            response = self.client.patch(url_book, update)
+            self.assertEquals(response.status_code, 200)
+            self.assertEquals(Book.objects.get(pk=book.pk).title, "Patch_Update_Title")
+            update_invalid = {
+                "pages": "test",
+            }
+            response = self.client.patch(url_book, update_invalid)
+            self.assertEquals(response.status_code, 400)
+
+        url_book = reverse("api:patch_update_book", kwargs={"pk": 100})
+        response = self.client.patch(url_book, {"title": "Test_Title"})
+        self.assertEquals(response.status_code, 404)
+
+    def test_delete_book(self):
+        """Удаление объекта book"""
+
+        for book in Book.objects.all():
+            url_book = reverse("api:delete_book", kwargs={"pk": book.pk})
+            response = self.client.delete(url_book)
+            self.assertEquals(response.status_code, 204)
+            self.assertFalse(Book.objects.filter(pk=book.pk).exists())
+
+        url_book = reverse("api:delete_book", kwargs={"pk": 100})
+        response = self.client.delete(url_book)
+        self.assertEquals(response.status_code, 404)
+
+    def test_detail_book(self):
+        """Получение конкретной записи book"""
+
+        for book in Book.objects.all():
+            url_book = reverse("api:detail_book_view", kwargs={"pk": book.pk})
+            response = self.client.get(url_book)
+            self.assertEquals(response.status_code, 200)
+            self.assertEquals(response.data.get("title"), Book.objects.get(pk=book.pk).title)
+            Book.objects.all().delete()
+            response = self.client.get(url_book)
+            self.assertEquals(response.status_code, 404)
