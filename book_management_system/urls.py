@@ -22,7 +22,7 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('book_management.urls')),
-    path('api/v1/', include('api.v1.urls')),
+    path('api/v1/', include('api.v1.urls', namespace='api')),
 ]
 
 if settings.DEBUG:
