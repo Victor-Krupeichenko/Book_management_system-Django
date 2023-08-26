@@ -1,0 +1,54 @@
+version: "3.7"
+services:
+  django_book_management_database:
+    image: postgres:15.3
+    container_name: django_book_management_database
+    command: -p 1224
+    ports:
+      - "5432:1224"
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - book_management_django
+
+  django_book_management:
+    build:
+      context: .
+    container_name: django_book_management
+    volumes:
+      - static:/static
+      - media:/media
+    env_file:
+      - .env
+    command: [ "/book/docker_start/start.sh" ]
+    ports:
+      - "8018:8018"
+    depends_on:
+      - django_book_management_database
+    restart: always
+    networks:
+      - book_management_django
+
+  nginx:
+    image: nginx:1.25.1-alpine
+    volumes:
+      - static:/static
+      - media:/media
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+
+    ports:
+      - "80:80"
+    restart: always
+    depends_on:
+      - django_book_management
+    networks:
+      - book_management_django
+networks:
+  book_management_django:
+    name: book_management_django
+    driver: bridge
+
+volumes:
+  static:
+  media:
