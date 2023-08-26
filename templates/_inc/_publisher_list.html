@@ -1,0 +1,36 @@
+<h3 class="text-center">{{ title }}</h3>
+<table class="table table-hover mt-3 text-center">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Название</th>
+        <th scope="col">Адрес</th>
+        <th scope="col">Email</th>
+        <th scope="col">Изменить</th>
+        <th scope="col">Удалить</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for object in object_list %}
+        <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>
+                <a href="{% url 'all_publisher_book' object.slug %}">{{ object.title }}</a>
+            </td>
+            <td>{{ object.address }}</td>
+            <td>{{ object.email_address }}</td>
+            <td>
+                <a href="{% url 'update_publisher' object.slug %}"
+                       class="btn btn-primary btn-sm btn-block">Изменить</a>
+            </td>
+            <td>
+                <form action="{% url 'delete_publisher' object.slug %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm btn-block">Удалить</button>
+                </form>
+            </td>
+
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

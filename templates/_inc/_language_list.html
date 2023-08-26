@@ -1,0 +1,26 @@
+<h3 class="text-center">{{ title }}</h3>
+<table class="table table-hover mt-3 text-center">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Язык</th>
+        <th scope="col">Удалить</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for object in object_list %}
+        <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>
+                <a href="{% url 'all_language_book' object.slug %}">{{ object }}</a>
+            </td>
+            <td>
+                <form action="{% url 'delete_language' object.slug %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm btn-block">Удалить</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

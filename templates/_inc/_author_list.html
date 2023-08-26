@@ -1,0 +1,22 @@
+<h3 class="text-center">{{ title }}</h3>
+<table class="table table-hover mt-3 text-center">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Имя</th>
+        <th scope="col">Страна</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for object in object_list %}
+        <tr>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>
+                {{ object.title }}
+                <a href="{% url 'all_author_book' object.slug %}">{{ object }}</a>
+            </td>
+            <td>{{ object.country }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

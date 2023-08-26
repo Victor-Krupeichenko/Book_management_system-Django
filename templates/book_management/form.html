@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if add_book_form %}
+        {{ title }}
+    {% elif info %}
+        {{ info }}: {{ object.title }}
+    {% elif create_author %}
+        {{ title }}
+    {% elif create_publisher %}
+        {{ title }}
+    {% elif update_publisher %}
+        {{ title }}
+    {% elif create_language %}
+        {{ title }}
+    {% elif create_genre %}
+        {{ title }}
+    {% endif %}
+{% endblock %}
+
+
+
+{% block content %}
+    {% if add_book_form %}
+        <h3 class="text-center">{{ title }}</h3>
+    {% elif info %}
+        <h3 class="text-center">{{ info }}: {{ object.title }}</h3>
+    {% elif create_author %}
+        <h3 class="text-center">{{ title }}</h3>
+    {% elif create_publisher %}
+        <h3 class="text-center">{{ title }}</h3>
+    {% elif update_publisher %}
+        <h3 class="text-center">{{ title }}</h3>
+    {% elif create_language %}
+        <h3 class="text-center">{{ title }}</h3>
+    {% elif create_genre %}
+        <h3 class="text-center">{{ title }}</h3>
+    {% endif %}
+    <form action="" method="post" class="mt-5" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if update_info %}
+            {% for field in form %}
+                {% if field.name == "cover" %}
+                    {% if book.cover %}
+                        <a href="{{ book.cover.url }}">
+                            <img src="{{ book.cover.url }}" alt="" width="70" height="80">
+                        </a>
+                        <p>{{ field }}</p>
+                    {% else %}
+                        <p>{{ field }}</p>
+                    {% endif %}
+                {% else %}
+                    <p>{{ field }}</p>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            {{ form.as_p }}
+        {% endif %}
+        <div class="d-grid gap-2 mt-2">
+            {% if add_book_form %}
+                <button type="submit" class="btn btn-primary btn-block btn-sm">Add Book</button>
+            {% elif info %}
+                <button type="submit" class="btn btn-primary btn-block btn-sm">Update Book</button>
+            {% elif create_author %}
+                <button type="submit" class="btn btn-primary btn-block btn-sm">Add Author</button>
+            {% elif create_publisher %}
+                <button type="submit" class="btn btn-primary btn-block btn-sm">Add Publisher</button>
+            {% elif update_publisher %}
+                <button type="submit" class="btn btn-primary btn-block btn-sm">Update Publisher</button>
+            {% elif create_language %}
+                <button type="submit" class="btn btn-primary btn-block btn-sm">Add Language</button>
+            {% elif create_genre %}
+                <button type="submit" class="btn btn-primary btn-block btn-sm">Add Genre</button>
+            {% endif %}
+        </div>
+    </form>
+{% endblock %}

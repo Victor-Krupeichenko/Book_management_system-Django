@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+
+
+{% block content %}
+    <h3 class="text-center">All Book</h3>
+    <table class="table table-hover mt-3 text-center">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Название</th>
+            <th scope="col">Жанр</th>
+            <th scope="col">Автор</th>
+            <th scope="col">Год издания</th>
+            <th scope="col">Издательство</th>
+            <th scope="col">Посмотреть</th>
+            <th scope="col">Удалить</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for object in object_list %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>{{ object.title }}</td>
+                <td>
+                    {% for genre in object.genre.all %}
+                        <a href="{% url 'all_genre_book' genre.slug %}">{{ genre }}</a>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for author in object.author.all %}
+                        <a href="{% url 'all_author_book' author.slug %}">{{ author }}</a>
+                    {% endfor %}
+                </td>
+                <td>{{ object.year }}</td>
+                <td>
+                    <a href="{% url 'all_publisher_book' object.publisher.slug %}">{{ object.publisher }}</a>
+                </td>
+                <td>
+                    <a href="{{ object.get_absolute_url }}"
+                       class="btn btn-primary btn-sm btn-block">Посмотреть</a>
+                </td>
+                <td>
+                    <form action="{% url 'delete_book' object.slug %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm btn-block">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

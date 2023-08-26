@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+
+{% block content %}
+    {% if publisher %}
+        {% include '_inc/_publisher_list.html' %}
+    {% elif author %}
+        {% include '_inc/_author_list.html' %}
+    {% elif language %}
+        {% include '_inc/_language_list.html' %}
+    {% elif genre %}
+        {% include '_inc/_genre_lst.html' %}
+    {% endif %}
+{% endblock %}
+
