@@ -1,4 +1,10 @@
 # Book_management_system-Django
+![Python](https://img.shields.io/badge/-Python-f1f518?style=flat-square&logo=python)   
+![Django](https://img.shields.io/badge/-Django-092E20?style=flat-square&logo=django)
+![Django Rest](https://img.shields.io/badge/-DjangoRest-092E20?style=flat-square&logo=django-rest)
+![Bootstrap](https://img.shields.io/badge/-Bootstrap-ce62f5?style=flat-square&logo=bootstrap)  
+![Docker](https://img.shields.io/badge/-Docker-1de4f2?style=flat-square&logo=docker) 
+![Postgresql](https://img.shields.io/badge/-Postgresql-1de4f2?style=flat-square&logo=postgresql)  
 
 Приложение менеджмента книг
 * Позволяет добавлять авторов книг
